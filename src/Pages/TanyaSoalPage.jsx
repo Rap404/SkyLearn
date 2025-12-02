@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 const materiList = [
   "Sistem Bilangan Real",
@@ -11,7 +11,7 @@ const materiList = [
   "Integral – Volume Benda Putar",
 ];
 
-const TanyaPage = () => {
+const TanyaSoalPage = () => {
   const [materi, setMateri] = useState(materiList[0]);
   const [input, setInput] = useState("");
   const [hasil, setHasil] = useState("");
@@ -152,4 +152,4 @@ const TanyaPage = () => {
   );
 };
 
-export default TanyaPage;
+export default TanyaSoalPage;
