@@ -34,7 +34,6 @@ const TrigonoCalculator = () => {
             return;
         }
 
-        // Simulasi perhitungan fungsi Trigonometri
         setTimeout(() => {
             let calculatedResult;
             let finalValue;

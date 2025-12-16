@@ -10,7 +10,6 @@ const NavBar = ({ toggleSidebar, currentView, currentTopic }) => {
     };
 
     return (
-        // Menggunakan shadow-md dan border-b untuk pemisah yang jelas
         <div className="w-full h-16 bg-white shadow-md border-b border-gray-100 flex items-center justify-between px-6 z-10 sticky top-0"> 
             
             {/* KIRI: Tombol Toggle (Burger) & Judul Halaman */}
@@ -34,7 +33,6 @@ const NavBar = ({ toggleSidebar, currentView, currentTopic }) => {
 
             {/* KANAN: User Profile & Notifikasi */}
             <div className="flex items-center space-x-3 sm:space-x-4">
-                {/* Avatar User - Menggunakan warna Indigo yang konsisten */}
                 <div className="w-9 h-9 bg-indigo-500 rounded-full flex items-center justify-center text-white font-bold text-xs shadow-md">
                     A
                 </div>

@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 
 const IntegralLuasDaerahCalculator = () => { 
-    // State baru untuk Batas Atas dan Batas Bawah
     const [functionInput, setFunctionInput] = useState('');
     const [lowerBound, setLowerBound] = useState('');
     const [upperBound, setUpperBound] = useState('');
@@ -17,7 +16,6 @@ const IntegralLuasDaerahCalculator = () => {
         const a = parseFloat(lowerBound);
         const b = parseFloat(upperBound);
 
-        // Validasi input batas
         if (isNaN(a) || isNaN(b) || b < a) {
             setResult({
                 result: "Input batas tidak valid.",
@@ -28,18 +26,14 @@ const IntegralLuasDaerahCalculator = () => {
             return;
         }
 
-        // Simulasi perhitungan API/Logika Backend (diubah menjadi Integral)
         setTimeout(() => {
             let calculatedResult;
             
-            // Contoh Simulasi Integral Tentu Luas Daerah (f(x) = x) dari a ke b
             if (functionInput.includes('x')) { 
-                // Integral dari x adalah (1/2)x^2
-                // Hasil: [ (1/2)b^2 ] - [ (1/2)a^2 ]
                 const area = 0.5 * (b * b) - 0.5 * (a * a);
                 
                 calculatedResult = {
-                    result: `${area.toFixed(2)} satuan luas`, // Tampilkan 2 angka di belakang koma
+                    result: `${area.toFixed(2)} satuan luas`,
                     steps: [
                         `Fungsi: f(x) = ${functionInput}`,
                         `Batas Integral: [${a} ke ${b}]`,

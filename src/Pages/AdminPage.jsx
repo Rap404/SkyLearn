@@ -7,7 +7,6 @@ import TrigonoCalculator from '../components/TrigonoCalculator';
 import LimitCalculator from '../components/LimitCalculator';
 import IntegralLuasDaerahCalculator from '../components/IntegralCalculator';
 
-// Komponen Card dipertahankan...
 const Card = ({ Stat, Label, Color }) => {
     const colorClasses = {
         indigo: 'border-indigo-500',
@@ -59,9 +58,6 @@ const AdminPage = () => {
                     <h1 className="text-4xl font-extrabold text-gray-900 tracking-tight">{getTitle(currentAdminView)}</h1>
                     <p className="text-gray-500 mt-1">{getDescription(currentAdminView)}</p>
                 </header>
-
-                {/* Konten Utama Dinamis (Kotak Putih) */}
-                {/* Menggunakan w-full agar kotak putih mengisi ruang di dalam <main> */}
                 <div className="bg-white p-8 rounded-xl shadow-lg w-full">
                     
                     {(() => {
@@ -69,7 +65,6 @@ const AdminPage = () => {
                             case "ADMIN_DASHBOARD":
                                 return (
                                     <>
-                                        {/* Kartu Statistik */}
                                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
                                             <Card Stat="1,245" Label="Total Pengguna" Color="indigo" />
                                             <Card Stat="58" Label="Konten Aktif" Color="green" />
@@ -123,7 +118,6 @@ const AdminPage = () => {
             />
             
             {/* 2. MAIN CONTENT WRAPPER */}
-            {/* PERBAIKAN UTAMA: ml-0 md:ml-64 DIBERIKAN KEMBALI agar konten terdorong dan tidak menimpa Sidebar fixed/absolute */}
             <div className="flex-1 flex flex-col h-screen ml-0 md:ml-64"> 
                 
                 {/* 3. NAVBAR */}
@@ -134,7 +128,6 @@ const AdminPage = () => {
                 />
 
                 {/* 4. CONTENT AREA */}
-                {/* Menggunakan p-6 (padding 6) untuk jarak yang rapi dari NavBar dan Sidebar. */}
                 <main className="flex-1 overflow-y-auto p-6 scroll-smooth"> 
                     {renderAdminContent()}
                 </main>

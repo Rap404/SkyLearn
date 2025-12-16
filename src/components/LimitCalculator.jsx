@@ -27,13 +27,11 @@ const LimitCalculator = () => {
             return;
         }
 
-        // Simulasi perhitungan API/Logika Backend untuk LIMIT
         setTimeout(() => {
             let calculatedResult;
             const functionText = functionInput.toLowerCase();
 
             if (functionText.includes('x^2')) {
-                // Contoh: lim (x->c) x^2. Hasil: c^2
                 const res = c * c;
                 calculatedResult = {
                     limit: res.toFixed(2),
@@ -46,7 +44,6 @@ const LimitCalculator = () => {
                     type: 'success'
                 };
             } else if (functionText.includes('sin')) {
-                // Contoh: lim (x->0) sin(x). Hasil: 0
                 const res = Math.sin(c);
                  calculatedResult = {
                     limit: res.toFixed(3),
@@ -59,7 +56,6 @@ const LimitCalculator = () => {
                     type: 'success'
                 };
             } else if (functionText.includes('(x^2-4)/(x-2)') && c === 2) {
-                 // Contoh Limit 0/0 (Hole pada x=2): lim (x->2) (x^2-4)/(x-2) = lim (x->2) (x+2) = 4
                  calculatedResult = {
                     limit: "4",
                     steps: [
@@ -85,7 +81,7 @@ const LimitCalculator = () => {
     };
 
     return (
-        <div className="w-full p-6 bg-white rounded-xl"> {/* Diubah dari max-w-4xl agar rata kiri */}
+        <div className="w-full p-6 bg-white rounded-xl">
             <h3 className="text-2xl font-bold text-indigo-800 mb-6">Kalkulator Limit Fungsi</h3>
             
             <form onSubmit={handleCalculate} className="space-y-6">

@@ -1,8 +1,5 @@
-// src/Pages/SideBar.jsx (FINAL VISUAL REFINEMENT)
-
 import React, { useState } from "react";
 
-// Item menu utama (Materi Matematika)
 const mainNavItems = [
     { name: "Turunan", view: "TURUNAN",},
     { name: "Aljabar", view: "ALJABAR",},
@@ -15,11 +12,6 @@ const dashboardItem = { name: "Dashboard", view: "ADMIN_DASHBOARD",};
 
 
 const SideBar = ({ currentView, onNavigate, isOpen, toggleSidebar }) => {
-    
-    // Logika state dipertahankan
-    const [openSubMenu, setOpenSubMenu] = useState(null); 
-    const toggleSubMenu = (menuName) => { setOpenSubMenu(openSubMenu === menuName ? null : menuName); };
-    
     const mobileClasses = isOpen ? 'translate-x-0' : '-translate-x-full';
     const isActive = (itemView) => currentView === itemView;
 
@@ -61,10 +53,9 @@ const SideBar = ({ currentView, onNavigate, isOpen, toggleSidebar }) => {
                 }
             > 
                 
-                {/* Header/Logo Area - Dibuat lebih menonjol */}
+                {/* Header/Logo Area*/}
                 <div className="p-4 text-3xl font-extrabold text-white bg-indigo-800 flex justify-between items-center h-16 shadow-lg">
                     <span className="tracking-wider flex items-center">
-                        {/* Logo Teks SkyLearn yang lebih menonjol */}
                         <span className="text-indigo-300">Sky</span><span className="text-white">Learn</span>
                     </span>
                     <button onClick={toggleSidebar} className="text-indigo-300 md:hidden p-1 rounded hover:bg-indigo-700">
@@ -74,7 +65,7 @@ const SideBar = ({ currentView, onNavigate, isOpen, toggleSidebar }) => {
                     </button>
                 </div>
 
-                {/* Navigasi Area dengan Scroll */}
+                {/* Navigasi Area*/}
                 <nav className="mt-2 overflow-y-auto h-[calc(100vh-64px)] pb-4">
                     
                     {/* Bagian 1: DASHBOARD */}

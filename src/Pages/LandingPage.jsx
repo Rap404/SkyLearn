@@ -1,7 +1,6 @@
 import React from "react";
 import { useNavigate } from 'react-router-dom';
 
-// Data Anggota Kelompok (5 Orang)
 const teamMembers = [
   {
     name: "Nama Anggota 1",

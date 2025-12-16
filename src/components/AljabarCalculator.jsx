@@ -41,11 +41,8 @@ const AljabarCalculator = () => {
             return;
         }
 
-        // Simulasi perhitungan Persamaan Kuadrat menggunakan Rumus ABC
         setTimeout(() => {
             let calculatedResult;
-
-            // 1. Hitung Diskriminan (D = b^2 - 4ac)
             const D = (b * b) - (4 * a * c);
             const equation = `${a}${variable}² + ${b}${variable} + ${c} = 0`;
             const steps = [
@@ -81,7 +78,6 @@ const AljabarCalculator = () => {
                     type: 'success'
                 };
             } else {
-                // Dua akar kompleks/imajiner (D < 0)
                 const sqrtNegD = Math.sqrt(-D);
                 const realPart = (-b / (2 * a)).toFixed(4);
                 const imagPart = (sqrtNegD / (2 * a)).toFixed(4);
