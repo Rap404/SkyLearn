@@ -7,13 +7,15 @@ import Limit from "./pages/kelas/Limit";
 import Turunan from "./pages/kelas/Turunan";
 import Integral from "./pages/kelas/Integral";
 import TanyaSoalPage from "./pages/TanyaSoalPage";
+import LandingPage from "./Pages/LandingPage";
+import AdminPage from "./Pages/AdminPage";
 
 function App() {
   return (
     <>
       <Routes>
         <Route element={<BasicLayout />}>
-          <Route path="/" element={<HomePage />} />
+          <Route path="/" element={<LandingPage />} />
           <Route path="/tanya-soal" element={<TanyaSoalPage />} />
           <Route path="/kelas" element={<KelasPage />} />
           <Route path="/kelas/Limit" element={<Limit />} />
@@ -22,6 +24,8 @@ function App() {
         </Route>
         {/* <Route path="/kelas" element={<BilanganReal />} /> */}
         <Route path="/gemini" element={<Gemini />} />
+        <Route path="/admin" element={<AdminPage />} />
+        <Route path="/tanya-soal" element={<TanyaSoalPage />} />
       </Routes>
     </>
   );
