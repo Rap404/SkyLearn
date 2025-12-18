@@ -39,13 +39,8 @@ const TanyaSoalPage = () => {
     }
   };
 
-  // ============================
-  // FUNGSI HITUNG PER MATERI
-  // ============================
-
   const hitungBilanganReal = () => {
     try {
-      // contoh input: 2+3*4
       const result = eval(input);
       setHasil("Hasil: " + result);
     } catch {
@@ -54,14 +49,11 @@ const TanyaSoalPage = () => {
   };
 
   const hitungAljabar = () => {
-    // contoh sangat sederhana
-    // kamu bisa tingkatkan pakai math.js
     setHasil("Belum ada evaluator aljabar, masukkan ekspresi sederhana.");
   };
 
   const hitungTrigonometri = () => {
     try {
-      // contoh: sin(30)
       let eksp = input.toLowerCase();
 
       eksp = eksp
@@ -99,10 +91,6 @@ const TanyaSoalPage = () => {
   const hitungVolumePutar = () => {
     setHasil("Volume benda putar belum dibuat. Rumus π ∫ (f(x))² dx.");
   };
-
-  // ============================
-  // RENDER UI
-  // ============================
 
   return (
     <div className="p-6 max-w-3xl mx-auto">
