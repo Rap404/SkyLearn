@@ -7,6 +7,8 @@ import TrigonoCalculator from "../components/TrigonoCalculator";
 import LimitCalculator from "../components/LimitCalculator";
 import IntegralLuasDaerahCalculator from "../components/IntegralCalculator";
 import Limit from "./kelas/Limit";
+import Turunan from "./kelas/Turunan";
+import Integral from "./kelas/Integral";
 
 const Card = ({ Stat, Label, Color }) => {
   const colorClasses = {
@@ -59,7 +61,7 @@ const AdminPage = () => {
         //   return "Penjelasan mendalam dan kalkulator untuk fungsi Trigonometri.";
         case "LIMIT":
           return "Visualisasi dan pemecahan masalah Limit fungsi.";
-        case "INTEGRAL_LUAS_DAERAH":
+        case "INTEGRAL":
           return "Kalkulator Integral untuk menghitung Luas Daerah di bawah kurva.";
         default:
           return `Halaman untuk materi ${getTitle(currentAdminView)} di sini.`;
@@ -105,7 +107,7 @@ const AdminPage = () => {
                 );
 
               case "TURUNAN":
-                return <TurunanCalculator />;
+                return <Turunan />;
 
               // case "ALJABAR":
               //     return <AljabarCalculator />;
@@ -116,8 +118,8 @@ const AdminPage = () => {
               case "LIMIT":
                 return <Limit />;
 
-              case "INTEGRAL_LUAS_DAERAH":
-                return <IntegralLuasDaerahCalculator />;
+              case "INTEGRAL":
+                return <Integral />;
               default:
                 return (
                   <p className="text-gray-600">

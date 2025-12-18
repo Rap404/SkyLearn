@@ -5,7 +5,7 @@ const mainNavItems = [
   // { name: "Aljabar", view: "ALJABAR",},
   // { name: "Trigonometri", view: "TRIGONOMETRI",},
   { name: "Limit", view: "LIMIT" },
-  { name: "Integral – Luas Daerah", view: "INTEGRAL_LUAS_DAERAH" },
+  { name: "Integral", view: "INTEGRAL" },
 ];
 
 const dashboardItem = { name: "Dashboard", view: "ADMIN_DASHBOARD" };

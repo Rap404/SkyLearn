@@ -1,6 +1,5 @@
 import { Route, Routes } from "react-router-dom";
 import Gemini from "./pages/Gemini";
-import BasicLayout from "./layouts/BasicLayout";
 import Limit from "./pages/kelas/Limit";
 import Turunan from "./pages/kelas/Turunan";
 import Integral from "./pages/kelas/Integral";

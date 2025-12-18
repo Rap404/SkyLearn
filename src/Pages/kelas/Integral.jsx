@@ -1,10 +1,12 @@
 import React from "react";
+import MateriIntegral from "../../components/materi/MateriIntegral";
+import KalkulatorIntegral from "../../components/kalkulator/KalkulatorIntegral";
 
 const Integral = () => {
   return (
-    <div className="flex flex-row width-full ">
-      <div className="bg-amber-50">tes</div>
-      <div className="bg-amber-300">tes</div>
+    <div className="min-h-screen overflow-y-auto bg-gray-100 p-5">
+      <MateriIntegral />
+      <KalkulatorIntegral />
     </div>
   );
 };
