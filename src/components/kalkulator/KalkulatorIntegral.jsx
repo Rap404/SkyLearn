@@ -1,9 +1,10 @@
 import React, { useState } from "react";
-
 import { create, all } from "mathjs";
+import FunctionPlot from "../FunctionPlot";
 
 const math = create(all);
-const KalkulatorIntegral = () => {
+
+export default function KalkulatorIntegral() {
   const [funcF, setFuncF] = useState("x^2");
   const [funcG, setFuncG] = useState("0");
   const [limA, setLimA] = useState("0");
@@ -11,242 +12,173 @@ const KalkulatorIntegral = () => {
   const [type, setType] = useState("area");
   const [result, setResult] = useState(null);
 
-  const getLabels = () => {
-    if (type === "volumeY") {
-      return {
-        labelF: "Persamaan f(y):",
-        labelG: "Persamaan g(y) (Batas Dalam/Sumbu Y):",
-        noteF: '*Gunakan variabel "y". Contoh: sqrt(y)',
-        labelA: "Batas Bawah y1:",
-        labelB: "Batas Atas y2:",
-        varName: "y",
-      };
-    }
-    return {
-      labelF: "Persamaan f(x):",
-      labelG: "Persamaan g(x) (Batas Bawah/Sumbu X):",
-      noteF: '*Gunakan variabel "x". Contoh: x^2',
-      labelA: "Batas Bawah x1:",
-      labelB: "Batas Atas x2:",
-      varName: "x",
-    };
+  const varName = type === "volumeY" ? "y" : "x";
+
+  const normalisasiFungsi = (f) => {
+    return (
+      f
+        .replace(/\s+/g, "")
+        // 3x → 3*x
+        .replace(/(\d)x/g, "$1*x")
+        // )x → )*x
+        .replace(/\)\s*x/g, ")*x")
+        // x( → x*(
+        .replace(/x\s*\(/g, "x*(")
+        // )( → )*(
+        .replace(/\)\s*\(/g, ")*(")
+        // xsin(x) → x*sin(x)
+        .replace(/x(?=[a-zA-Z])/g, "x*")
+    );
   };
 
   const hitung = () => {
     try {
       const a = math.evaluate(limA);
       const b = math.evaluate(limB);
-      const varName = getLabels().varName;
-
       const fExpr = math.parse(funcF).compile();
-      const gExpr = math.parse(funcG).compile();
+      const gExpr = math.parse(funcG.trim() === "" ? "0" : funcG).compile();
 
-      // Integran Fungsi
-      const integrand = (val) => {
-        let scope = {};
-        scope[varName] = val;
+      const evalFunc = (val) => {
+        const scope = { [varName]: val };
         const yF = fExpr.evaluate(scope);
         const yG = gExpr.evaluate(scope);
-
-        if (type === "area") {
-          return Math.abs(yF - yG);
-        } else {
-          return Math.abs(Math.pow(yF, 2) - Math.pow(yG, 2));
-        }
+        return type === "area"
+          ? Math.abs(yF - yG)
+          : Math.abs(yF ** 2 - yG ** 2);
       };
 
-      // Simpson's Rule 1/3
-      const n = 2000;
+      const n = 1000;
       const h = (b - a) / n;
-      let sum = integrand(a) + integrand(b);
-      for (let i = 1; i < n; i++) {
-        sum += (i % 2 === 0 ? 2 : 4) * integrand(a + i * h);
-      }
-      const numericRes = (h / 3) * sum;
+      let sum = evalFunc(a) + evalFunc(b);
 
-      let finalDisplay = "";
-      let steps = "";
-      const decimalVal = (numericRes * Math.PI).toFixed(4);
+      for (let i = 1; i < n; i++) {
+        sum += (i % 2 === 0 ? 2 : 4) * evalFunc(a + i * h);
+      }
+
+      const integral = (h / 3) * sum;
 
       if (type === "area") {
-        finalDisplay = numericRes.toFixed(4) + " Satuan Luas";
-        steps = [
-          {
-            title: "1. Rumus Luas",
-            content: `Menggunakan integral tentu: L = ∫ |f(x) - g(x)| dx dari ${a} ke ${b}.`,
-          },
-          {
-            title: "2. Evaluasi",
-            content:
-              "Menghitung selisih fungsi atas dan bawah pada rentang tersebut.",
-          },
-        ];
-      } else {
-        const sumbu = type === "volumeX" ? "X" : "Y";
-        finalDisplay = numericRes.toFixed(4) + " π Satuan Volume";
-        steps = [
-          {
-            title: `1. Rumus Volume (Sumbu ${sumbu})`,
-            content: `Menggunakan metode cakram/cincin terhadap sumbu ${sumbu}: V = π ∫ |f(${varName})² - g(${varName})²| d${varName}`,
-          },
-          {
-            title: "2. Persiapan Fungsi",
-            content: `Kuadratkan fungsi luar: (${funcF})²\nKuadratkan fungsi dalam: (${funcG})²`,
-          },
-          {
-            title: "3. Integrasi",
-            content: `Melakukan integrasi numerik pada selisih kuadrat tersebut dari ${a} sampai ${b}.`,
-          },
-          {
-            title: "4. Hasil",
-            content: `Nilai integral adalah ${numericRes.toFixed(
-              4
-            )}. Setelah dikalikan dengan π, volume total adalah ${decimalVal}.`,
-          },
-        ];
-      }
+        setResult({
+          main: `${integral.toFixed(4)} satuan luas`,
+          sub: "",
+          steps: [
+            "Rumus Luas",
+            `L = ∫ |f(${varName}) - g(${varName})| d${varName}`,
 
-      setResult({
-        finalDisplay,
-        decimalVal:
-          type !== "area"
-            ? `Atau setara dengan ≈ ${decimalVal} satuan kubik`
-            : "",
-        steps,
-      });
-    } catch (err) {
-      alert("Terjadi kesalahan! Pastikan format fungsi benar.");
-      console.error(err);
+            "Substitusi Fungsi",
+            `∫ dari ${limA} ke ${limB} |(${funcF}) - (${funcG})| d${varName}`,
+
+            "Penyelesaian",
+            "Lakukan integrasi pada fungsi tersebut dan masukkan batasnya",
+
+            "Kesimpulan",
+            `Luas daerah = ${integral.toFixed(4)} satuan luas`,
+          ],
+        });
+      } else {
+        setResult({
+          main: `${integral.toFixed(4)} π satuan volume`,
+          sub: `≈ ${(integral * Math.PI).toFixed(4)}`,
+          steps: [
+            `V = π ∫ [f(${varName})² - g(${varName})²] d${varName}`,
+            `∫ dari ${limA} ke ${limB} [(${funcF})² - (${funcG})²] d${varName}`,
+            `Hasil = ${integral.toFixed(4)}π`,
+          ],
+        });
+      }
+    } catch (e) {
+      alert("Format fungsi salah. Gunakan x^2, sqrt(x), dll.");
     }
   };
 
-  const labels = getLabels();
-
   return (
-    <div className="min-h-screen bg-gray-100 py-8 px-4">
+    <div className="min-h-screen bg-gray-100 p-6">
       <div className="max-w-3xl mx-auto bg-white rounded-2xl shadow-xl p-8">
-        <h2 className="text-3xl font-bold text-center text-gray-800 mb-8">
-          Kalkulator Integral Luas Daerah & Volume Benda Putar
+        <h2 className="text-3xl font-bold text-center text-gray-800 mb-6">
+          Kalkulator Integral & Volume
         </h2>
 
-        <div className="space-y-5">
-          {/* Function F */}
+        <div className="bg-blue-50 border-l-4 border-blue-500 p-4 rounded mb-6 text-sm">
+          <p>• Gunakan x^2, sqrt(x), sin(x)</p>
+          <p>• Gunakan * untuk perkalian</p>
+        </div>
+
+        <div className="space-y-4">
           <div>
-            <label className="block font-semibold text-gray-700 mb-2">
-              {labels.labelF}
-            </label>
+            <label className="font-semibold">Persamaan f({varName})</label>
             <input
-              type="text"
+              className="w-full p-3 border rounded-lg"
               value={funcF}
               onChange={(e) => setFuncF(e.target.value)}
-              placeholder="Contoh: x^2"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
             />
-            <p className="text-sm text-gray-500 mt-1">{labels.noteF}</p>
           </div>
 
-          {/* Function G */}
           <div>
-            <label className="block font-semibold text-gray-700 mb-2">
-              {labels.labelG}
-            </label>
+            <label className="font-semibold">Persamaan g({varName})</label>
             <input
-              type="text"
+              className="w-full p-3 border rounded-lg"
               value={funcG}
               onChange={(e) => setFuncG(e.target.value)}
-              placeholder="Kosongkan jika batasnya adalah sumbu"
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
             />
           </div>
 
-          {/* Limits */}
           <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block font-semibold text-gray-700 mb-2">
-                {labels.labelA}
-              </label>
-              <input
-                type="text"
-                value={limA}
-                onChange={(e) => setLimA(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              />
-            </div>
-            <div>
-              <label className="block font-semibold text-gray-700 mb-2">
-                {labels.labelB}
-              </label>
-              <input
-                type="text"
-                value={limB}
-                onChange={(e) => setLimB(e.target.value)}
-                className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-              />
-            </div>
+            <input
+              className="p-3 border rounded-lg"
+              placeholder="Batas bawah"
+              value={limA}
+              onChange={(e) => setLimA(e.target.value)}
+            />
+            <input
+              className="p-3 border rounded-lg"
+              placeholder="Batas atas"
+              value={limB}
+              onChange={(e) => setLimB(e.target.value)}
+            />
           </div>
 
-          {/* Type */}
-          <div>
-            <label className="block font-semibold text-gray-700 mb-2">
-              Tipe Perhitungan & Sumbu Putar:
-            </label>
-            <select
-              value={type}
-              onChange={(e) => setType(e.target.value)}
-              className="w-full px-4 py-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
-            >
-              <option value="area">Luas Daerah (Kurva x)</option>
-              <option value="volumeX">Volume Benda Putar (Sumbu X)</option>
-              <option value="volumeY">Volume Benda Putar (Sumbu Y)</option>
-            </select>
-          </div>
+          <select
+            className="w-full p-3 border rounded-lg"
+            value={type}
+            onChange={(e) => setType(e.target.value)}
+          >
+            <option value="area">Luas Daerah</option>
+            <option value="volumeX">Volume Putar Sumbu X</option>
+            <option value="volumeY">Volume Putar Sumbu Y</option>
+          </select>
 
-          {/* Button */}
           <button
             onClick={hitung}
-            className="w-full py-4 bg-green-500 hover:bg-green-600 text-white font-bold text-lg rounded-lg transition-colors"
+            className="w-full py-4 bg-green-500 text-white text-xl font-bold rounded-lg hover:bg-green-600"
           >
-            Hitung Langkah Demi Langkah
+            HITUNG
           </button>
         </div>
 
-        {/* Results */}
         {result && (
-          <div className="mt-8 space-y-6">
-            <div className="bg-green-50 p-6 rounded-xl border-l-6 border-green-500">
-              <strong className="text-gray-700">HASIL AKHIR:</strong>
-              <div className="text-3xl text-green-600 font-bold mt-2">
-                {result.finalDisplay}
+          <div className="mt-8 space-y-4">
+            <div className="bg-green-50 border-l-4 border-green-500 p-4 rounded">
+              <div className="text-2xl font-bold text-green-600">
+                {result.main}
               </div>
-              {result.decimalVal && (
-                <div className="text-sm text-gray-600 mt-2">
-                  {result.decimalVal}
-                </div>
+              {result.sub && (
+                <div className="text-gray-600 text-sm">{result.sub}</div>
               )}
             </div>
 
-            <div className="bg-gray-50 p-6 rounded-xl border border-gray-200">
-              <strong className="text-gray-800 text-lg">
-                LANGKAH PENYELESAIAN:
-              </strong>
-              <div className="mt-4 space-y-4">
-                {result.steps.map((step, index) => (
-                  <div key={index}>
-                    <div className="font-bold text-blue-700 pb-2 border-b border-gray-200">
-                      {step.title}
-                    </div>
-                    <div className="mt-2 text-gray-700 whitespace-pre-line">
-                      {step.content}
-                    </div>
-                  </div>
+            <div className="bg-gray-50 border rounded p-4">
+              <strong>Langkah Penyelesaian:</strong>
+              <ul className="list-decimal ml-5 mt-2 space-y-1">
+                {result.steps.map((s, i) => (
+                  <li key={i}>{s}</li>
                 ))}
-              </div>
+              </ul>
             </div>
           </div>
         )}
       </div>
+
+      {funcF && <FunctionPlot fungsi={normalisasiFungsi(funcF)} label="f(x)" />}
     </div>
   );
-};
-
-export default KalkulatorIntegral;
+}

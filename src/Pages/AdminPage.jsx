@@ -1,11 +1,6 @@
 import React, { useState } from "react";
 import SideBar from "./SideBar";
 import NavBar from "./NavBar";
-import TurunanCalculator from "../components/TurunanCalculator";
-import AljabarCalculator from "../components/AljabarCalculator";
-import TrigonoCalculator from "../components/TrigonoCalculator";
-import LimitCalculator from "../components/LimitCalculator";
-import IntegralLuasDaerahCalculator from "../components/IntegralCalculator";
 import Limit from "./kelas/Limit";
 import Turunan from "./kelas/Turunan";
 import Integral from "./kelas/Integral";
