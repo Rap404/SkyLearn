@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { askGemini } from "../utils/Gemini";
+import { askGemini } from "../utils/gemini";
 
 const Gemini = () => {
   const [prompt, setPrompt] = useState("");
