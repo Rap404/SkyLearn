@@ -4,8 +4,10 @@ import Limit from "./pages/kelas/Limit";
 import Turunan from "./pages/kelas/Turunan";
 import Integral from "./pages/kelas/Integral";
 import TanyaSoalPage from "./pages/TanyaSoalPage";
-import LandingPage from "./Pages/LandingPage";
-import AdminPage from "./Pages/AdminPage";
+import LandingPage from "./pages/LandingPage";
+import AdminPage from "./pages/AdminPage";
+// import LandingPage from "./pages/LandingPage";
+// import AdminPage from "./Pages/AdminPage";
 
 function App() {
   return (
