@@ -17,7 +17,7 @@ function App() {
         <Route path="/kelas/Turunan" element={<Turunan />} />
         <Route path="/kelas/Integral" element={<Integral />} />
         <Route path="/gemini" element={<Gemini />} />
-        <Route path="/admin" element={<AdminPage />} />
+        <Route path="/belajar" element={<AdminPage />} />
         <Route path="/tanya-soal" element={<TanyaSoalPage />} />
       </Routes>
     </>
