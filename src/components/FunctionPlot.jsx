@@ -14,18 +14,19 @@ ChartJS.register(LineElement, LinearScale, PointElement, Tooltip, Legend);
 const normalizeExpression = (f) =>
   f
     .replace(/\s+/g, "")
-    .replace(/(\d)x/g, "$1*x") // 5x → 5*x
-    .replace(/x(\d)/g, "x*$1") // x2 → x*2
-    .replace(/(\d)\(/g, "$1*(") // 2(x+1)
-    .replace(/\)(\d)/g, ")*$1") // (x+1)2
-    .replace(/x\(/g, "x*(") // x(x+1)
-    .replace(/\)\(/g, ")*("); // (x+1)(x-1)
+    .replace(/(\d)x/g, "$1*x")
+    .replace(/x(\d)/g, "x*$1")
+    .replace(/(\d)\(/g, "$1*(")
+    .replace(/\)(\d)/g, ")*$1")
+    .replace(/x\(/g, "x*(")
+    .replace(/\)\(/g, ")*(");
 
-const FunctionPlot = ({ fungsi, range = [-10, 10], label = "f(x)" }) => {
+const FunctionPlot = ({ fungsi, range = [-5, 5], label = "f(x)" }) => {
   const points = [];
-  const normalized = normalizeExpression(fungsi);
+  const normalized = normalizeExpression(fungsi || "0");
 
-  for (let x = range[0]; x <= range[1]; x += 0.01) {
+  // Loop dengan step yang disesuaikan agar performa tetap terjaga
+  for (let x = range[0]; x <= range[1]; x += 0.1) {
     let y;
     try {
       y = evaluate(normalized, { x });
@@ -40,27 +41,43 @@ const FunctionPlot = ({ fungsi, range = [-10, 10], label = "f(x)" }) => {
       {
         label,
         data: points,
-        borderWidth: 2,
+        borderColor: label.includes("'") ? "#10b981" : "#3b82f6", // Hijau jika turunan, Biru jika asli
+        backgroundColor: "rgba(59, 130, 246, 0.1)",
+        borderWidth: 3,
         pointRadius: 0,
-        spanGaps: false, // PENTING: jangan sambung grafik
+        tension: 0.3, // Membuat garis sedikit lebih mulus
+        spanGaps: false,
       },
     ],
   };
 
-  const options = {
-    responsive: true,
-    scales: {
-      x: {
-        type: "linear",
-        title: { display: true, text: "x" },
-      },
-      y: {
-        title: { display: true, text: "y" },
-      },
+const options = {
+  responsive: true,
+  maintainAspectRatio: true, // Ubah kembali ke true agar proporsional
+  aspectRatio: 1, // Memaksa grafik berbentuk kotak (persegi) agar pas di kolom desktop
+  plugins: {
+    legend: { display: true }
+  },
+  scales: {
+    x: {
+      type: "linear",
+      grid: { color: "rgba(0,0,0,0.05)" },
     },
-  };
+    y: {
+      type: "linear",
+      grid: { color: "rgba(0,0,0,0.05)" },
+      // Biarkan Chart.js menentukan skala otomatis agar grafik memenuhi area
+    },
+  },
+};
 
-  return <Line data={data} options={options} />;
+return (
+  <div className="w-full flex justify-center items-center p-2"> 
+    <div className="w-full max-w-[350px]"> {/* Membatasi lebar agar tidak gepeng */}
+      <Line data={data} options={options} />
+    </div>
+  </div>
+);
 };
 
 export default FunctionPlot;

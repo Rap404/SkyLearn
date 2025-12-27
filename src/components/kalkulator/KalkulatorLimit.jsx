@@ -1,63 +1,39 @@
 import React, { useState } from "react";
 import FunctionPlot from "../FunctionPlot";
-import { evaluate } from "mathjs";
+import { evaluate, derivative } from "mathjs";
+// import { evaluate } from "mathjs";
 
 const KalkulatorLimit = () => {
   const [fungsi, setFungsi] = useState("");
   const [menuju, setMenuju] = useState("");
   const [hasil, setHasil] = useState(null);
   const [steps, setSteps] = useState([]);
+  const [isCalculating, setIsCalculating] = useState(false);
 
+  // --- Logika Matematika (Tetap Sama) ---
   const normalisasiFungsi = (f) => {
-    return (
-      f
-        .replace(/\s+/g, "")
-        // 3x → 3*x
-        .replace(/(\d)x/g, "$1*x")
-        // )x → )*x
-        .replace(/\)\s*x/g, ")*x")
-        // x( → x*(
-        .replace(/x\s*\(/g, "x*(")
-        // )( → )*(
-        .replace(/\)\s*\(/g, ")*(")
-        // xsin(x) → x*sin(x)
-        .replace(/x(?=[a-zA-Z])/g, "x*")
-    );
+    return f.replace(/\s+/g, "").replace(/(\d)x/g, "$1*x").replace(/\)\s*x/g, ")*x").replace(/x\s*\(/g, "x*(").replace(/\)\s*\(/g, ")*(").replace(/x(?=[a-zA-Z])/g, "x*");
   };
 
   const hitungEkspresi = (expr, xValue) => {
-    try {
-      return evaluate(expr, { x: xValue });
-    } catch (err) {
-      return NaN;
-    }
+    try { return evaluate(expr, { x: xValue }); } catch (err) { return NaN; }
   };
 
   const faktorisasiLinear = (str) => {
     const s = str.replace(/\s+/g, "");
-
     const match = s.match(/^([+-]?\d*)x([+-]\d+)$/);
     if (!match) return null;
-
     let koefX = match[1];
     let konstanta = parseInt(match[2]);
-
     if (koefX === "" || koefX === "+") koefX = 1;
     else if (koefX === "-") koefX = -1;
     else koefX = parseInt(koefX);
-
     return [{ koefX, konstanta }];
   };
 
-  // PERBAIKAN 1: Parse kuadrat yang lebih robust
   const parseKuadrat = (str) => {
     const s = str.replace(/\s+/g, "");
-
-    let a = 0,
-      b = 0,
-      c = 0;
-
-    // Parse x^2 term
+    let a = 0, b = 0, c = 0;
     const x2Match = s.match(/([+-]?\d*)x\^2/);
     if (x2Match) {
       const coef = x2Match[1];
@@ -65,8 +41,6 @@ const KalkulatorLimit = () => {
       else if (coef === "-") a = -1;
       else a = parseInt(coef);
     }
-
-    // Parse x term (PERBAIKAN: tangani kasus -x, +x, x tanpa koefisien)
     const withoutX2 = s.replace(/[+-]?\d*x\^2/, "");
     const xMatch = withoutX2.match(/([+-]?\d*)x(?!\^)/);
     if (xMatch) {
@@ -75,309 +49,262 @@ const KalkulatorLimit = () => {
       else if (coef === "-") b = -1;
       else b = parseInt(coef);
     }
-
-    // Parse constant term
     const withoutX = s.replace(/[+-]?\d*x\^?\d*/g, "");
     if (withoutX) {
       const constants = withoutX.match(/[+-]?\d+/g);
-      if (constants) {
-        c = constants.reduce((sum, val) => sum + parseInt(val), 0);
-      }
+      if (constants) c = constants.reduce((sum, val) => sum + parseInt(val), 0);
     }
-
-    if (a === 0) return null;
-    return { a, b, c };
+    return a === 0 ? null : { a, b, c };
   };
 
-  // PERBAIKAN 2: Faktorisasi kuadrat dengan algoritma yang benar
   const faktorisasiKuadrat = (str) => {
     const parsed = parseKuadrat(str);
     if (!parsed) return null;
-
     const { a, b, c } = parsed;
-
-    // (px + q)(rx + s) = prx² + (ps + qr)x + qs
-    // Syarat: pr = a, qs = c, ps + qr = b
-
-    // Cari semua pembagi positif dan negatif dari a
     const getPembagi = (n) => {
-      const pembagi = [];
-      const absN = Math.abs(n);
-      for (let i = 1; i <= absN; i++) {
-        if (absN % i === 0) {
-          pembagi.push(i);
-          pembagi.push(-i);
-        }
-      }
-      return pembagi;
+      const p = []; const absN = Math.abs(n);
+      for (let i = 1; i <= absN; i++) { if (absN % i === 0) { p.push(i); p.push(-i); } }
+      return p;
     };
-
     const pembagA = a === 0 ? [0] : getPembagi(a);
     const maxC = Math.max(Math.abs(c), 1);
     const pembagC = [];
-    for (let i = -maxC; i <= maxC; i++) {
-      pembagC.push(i);
-    }
-
-    // Coba semua kombinasi p, q, r, s
+    for (let i = -maxC; i <= maxC; i++) pembagC.push(i);
     for (let p of pembagA) {
       if (p === 0) continue;
       const r = a / p;
-
       for (let q of pembagC) {
-        // Hitung s dari syarat qs = c
         let s;
-        if (c === 0) {
-          s = 0;
-        } else if (q === 0) {
-          continue; // Skip jika q = 0 tapi c ≠ 0
-        } else if (c % q !== 0) {
-          continue; // Skip jika c tidak habis dibagi q
-        } else {
-          s = c / q;
-        }
-
-        // Validasi: ps + qr harus = b
-        if (p * s + q * r === b) {
-          return [
-            { koefX: p, konstanta: q },
-            { koefX: r, konstanta: s },
-          ];
-        }
+        if (c === 0) s = 0;
+        else if (q === 0) continue;
+        else if (c % q !== 0) continue;
+        else s = c / q;
+        if (p * s + q * r === b) return [{ koefX: p, konstanta: q }, { koefX: r, konstanta: s }];
       }
     }
-
     return null;
   };
 
-  // PERBAIKAN 3: Format faktor dengan benar
-  const formatFaktor = (koefX, konstanta) => {
-    let result = "";
-
-    if (koefX === 1) result = "x";
-    else if (koefX === -1) result = "-x";
-    else result = `${koefX}*x`;
-
-    if (konstanta > 0) result += `+${konstanta}`;
-    else if (konstanta < 0) result += konstanta;
-
-    return result;
-  };
-
-  // PERBAIKAN 4: Cek apakah dua faktor ekuivalen
-  const isFaktorEkuivalen = (f1, f2, x0) => {
-    const expr1 = formatFaktor(f1.koefX, f1.konstanta);
-    const expr2 = formatFaktor(f2.koefX, f2.konstanta);
-
-    const val1 = hitungEkspresi(normalisasiFungsi(expr1), x0);
-    const val2 = hitungEkspresi(normalisasiFungsi(expr2), x0);
-
-    // Jika keduanya bernilai 0 di x0, kemungkinan besar sama
-    return Math.abs(val1) < 0.0001 && Math.abs(val2) < 0.0001;
+  const formatFaktor = (f) => {
+    let res = f.koefX === 1 ? "x" : f.koefX === -1 ? "-x" : `${f.koefX}x`;
+    if (f.konstanta > 0) res += `+${f.konstanta}`;
+    else if (f.konstanta < 0) res += f.konstanta;
+    return res;
   };
 
   const cariFaktorSama = (fNum, fDen) => {
     for (const fn of fNum) {
       for (const fd of fDen) {
-        if (fn.koefX === fd.koefX && fn.konstanta === fd.konstanta) {
-          return fn;
-        }
+        if (fn.koefX === fd.koefX && fn.konstanta === fd.konstanta) return fn;
       }
     }
     return null;
   };
 
   const hitungLimit = () => {
+    setIsCalculating(true);
     const langkah = [];
-
     const x0 = parseFloat(menuju);
 
     if (Number.isNaN(x0)) {
       setHasil("Nilai x tidak valid");
+      setIsCalculating(false);
       return;
     }
 
-    langkah.push(`1️⃣ Diketahui fungsi f(x) = ${fungsi}`);
-    langkah.push(`Limit akan dihitung saat x → ${x0}`);
-
-    // STEP 2: Substitusi langsung
-    langkah.push(`2️⃣ Coba substitusi langsung x = ${x0}`);
+    langkah.push(`Analisis fungsi: f(x) = (${fungsi})`);
+    langkah.push(`Mencari limit untuk x mendekati ${x0}`);
 
     const expr = normalisasiFungsi(fungsi);
-    const nilai = hitungEkspresi(expr, x0);
+    
     try {
-      if (isNaN(nilai) || !isFinite(nilai)) {
-        langkah.push(
-          "Substitusi langsung menghasilkan bentuk tak tentu (0/0 atau ∞)."
-        );
-      } else {
-        langkah.push("Substitusi langsung berhasil.");
-        langkah.push(`f(${x0}) = ${nilai}`);
-        setHasil(nilai);
+      // 1. Coba Substitusi Langsung
+      const nilaiLangsung = hitungEkspresi(expr, x0);
+      
+      if (!isNaN(nilaiLangsung) && isFinite(nilaiLangsung)) {
+        langkah.push("Substitusi langsung menghasilkan nilai definit.");
+        setHasil(nilaiLangsung);
         setSteps(langkah);
-        return;
-      }
-    } catch {
-      langkah.push("Substitusi langsung tidak dapat dilakukan.");
-    }
-
-    // STEP 3: Limit Trigonometri Khusus
-    if (x0 === 0) {
-      if (/sin\(x\)\s*\/\s*x/.test(fungsi)) {
-        langkah.push("3️⃣ Gunakan limit trigonometri khusus:");
-        langkah.push(" lim x→0 (sin x / x) = 1");
-        setHasil(1);
-        setSteps(langkah);
+        setIsCalculating(false);
         return;
       }
 
-      if (/tan\(x\)\s*\/\s*x/.test(fungsi)) {
-        langkah.push("3️⃣ Gunakan limit trigonometri khusus:");
-        langkah.push(" lim x→0 (tan x / x) = 1");
-        setHasil(1);
-        setSteps(langkah);
-        return;
+      langkah.push("Substitusi langsung menghasilkan 0/0 (Bentuk Tak Tentu).");
+
+      // 2. Analisis Pecahan untuk Faktorisasi
+      const pecahan = fungsi.replace(/\s+/g, "").split("/");
+      if (pecahan.length === 2) {
+        const pembilang = pecahan[0].replace(/^\(|\)$/g, "");
+        const penyebut = pecahan[1].replace(/^\(|\)$/g, "");
+
+        // Gunakan metode aljabar (Faktorisasi)
+        const fNum = faktorisasiLinear(pembilang) || faktorisasiKuadrat(pembilang);
+        const fDen = faktorisasiLinear(penyebut) || faktorisasiKuadrat(penyebut);
+
+        if (fNum && fDen) {
+          const faktorSama = cariFaktorSama(fNum, fDen);
+          if (faktorSama) {
+            langkah.push(`Faktorisasi Pembilang: (${fNum.map(formatFaktor).join(")(")})`);
+            langkah.push(`Faktorisasi Penyebut: (${fDen.map(formatFaktor).join(")(")})`);
+            langkah.push(`Coret faktor yang sama: (${formatFaktor(faktorSama)})`);
+            
+            const sNum = fNum.filter(f => f !== faktorSama);
+            const sDen = fDen.filter(f => f !== faktorSama);
+            const sisaFungsi = `(${sNum.map(f => formatFaktor(f)).join("*") || "1"})/(${sDen.map(f => formatFaktor(f)).join("*") || "1"})`;
+            
+            const hasilFaktorisasi = evaluate(normalisasiFungsi(sisaFungsi), { x: x0 });
+            langkah.push(`Substitusi ke sisa fungsi: f(${x0}) = ${hasilFaktorisasi}`);
+            setHasil(hasilFaktorisasi);
+            setSteps(langkah);
+            setIsCalculating(false);
+            return;
+          }
+        }
+
+        // 3. Jika Faktorisasi Gagal, Gunakan Aturan L'Hôpital (Paling Ampuh)
+        langkah.push("Menggunakan Aturan L'Hôpital (Turunan pembilang & penyebut)...");
+        
+        const turunanAtas = derivative(normalisasiFungsi(pembilang), 'x');
+        const turunanBawah = derivative(normalisasiFungsi(penyebut), 'x');
+        
+        langkah.push(`Turunan atas: ${turunanAtas.toString()}`);
+        langkah.push(`Turunan bawah: ${turunanBawah.toString()}`);
+        
+        const exprLHopital = `(${turunanAtas.toString()}) / (${turunanBawah.toString()})`;
+        const hasilLHopital = evaluate(exprLHopital, { x: x0 });
+
+        if (!isNaN(hasilLHopital) && isFinite(hasilLHopital)) {
+          setHasil(hasilLHopital);
+          setSteps(langkah);
+          setIsCalculating(false);
+          return;
+        }
       }
-
-      if (/\(1\s*-\s*cos\(x\)\)\s*\/\s*x\^2/.test(fungsi)) {
-        langkah.push("3️⃣ Gunakan identitas trigonometri:");
-        langkah.push(" lim x→0 (1 − cos x) / x² = 1/2");
-        setHasil(0.5);
-        setSteps(langkah);
-        return;
-      }
+    } catch (err) {
+      langkah.push("Error dalam kalkulasi simbolik.");
     }
 
-    // langkah.push("Bentuk 0/0 terdeteksi, lanjut faktorisasi");
-
-    // STEP 4: parsing pecahan
-    const pecahan = fungsi.replace(/\s+/g, "").split("/");
-
-    if (pecahan.length !== 2) {
-      setHasil("Format fungsi tidak dikenali");
-      setSteps(langkah);
-      return;
-    }
-
-    const pembilang = pecahan[0].replace(/^\(|\)$/g, "");
-    const penyebut = pecahan[1].replace(/^\(|\)$/g, "");
-
-    const numVal = evaluate(normalisasiFungsi(pembilang), { x: x0 });
-    const denVal = evaluate(normalisasiFungsi(penyebut), { x: x0 });
-
-    if (!(numVal === 0 && denVal === 0)) {
-      setHasil("Limit tidak berbentuk 0/0");
-      setSteps(langkah);
-      return;
-    }
-
-    langkah.push("3️⃣ Bentuk 0/0 terdeteksi, lanjut faktorisasi");
-
-    // ===== FAKTORISASI LINEAR =====
-    const fNum = faktorisasiLinear(pembilang) || faktorisasiKuadrat(pembilang);
-    const fDen = faktorisasiLinear(penyebut) || faktorisasiKuadrat(penyebut);
-
-    console.log("fNum:", fNum, "fDen:", fDen);
-    if (fNum && fDen) {
-      const faktorSama = cariFaktorSama(fNum, fDen);
-
-      if (faktorSama) {
-        langkah.push(`4️⃣ Faktorisasi pembilang: (${fNum.join(")(")})`);
-        langkah.push(`5️⃣ Faktorisasi penyebut: (${fDen.join(")(")})`);
-        langkah.push(`6️⃣ Coret faktor sama (${faktorSama})`);
-        const sisaNum = fNum.filter(
-          (f) =>
-            !(
-              f.koefX === faktorSama.koefX &&
-              f.konstanta === faktorSama.konstanta
-            )
-        );
-
-        const sisaDen = fDen.filter(
-          (f) =>
-            !(
-              f.koefX === faktorSama.koefX &&
-              f.konstanta === faktorSama.konstanta
-            )
-        );
-
-        const numStr =
-          sisaNum.map((f) => formatFaktor(f.koefX, f.konstanta)).join("*") ||
-          "1";
-        const denStr =
-          sisaDen.map((f) => formatFaktor(f.koefX, f.konstanta)).join("*") ||
-          "1";
-
-        const exprBaru = `(${numStr})/(${denStr})`;
-
-        const hasilAkhir = evaluate(normalisasiFungsi(exprBaru), { x: x0 });
-
-        langkah.push(`7️⃣ Substitusi x = ${x0}`);
-        langkah.push(`Hasil limit = ${hasilAkhir}`);
-
-        setHasil(hasilAkhir);
-        setSteps(langkah);
-        return;
-      }
-    }
-
-    setHasil("Belum bisa dihitung otomatis");
+    setHasil("Tidak Terdefinisi");
     setSteps(langkah);
+    setIsCalculating(false);
   };
 
   return (
-    <div className="min-h-screen overflow-y-auto bg-gray-100 p-5">
-      <div className="mx-auto max-w-3xl rounded-xl bg-white p-6 shadow-lg">
-        <h1 className="mb-4 text-2xl font-bold text-blue-600">
-          Kalkulator Limit (Step by Step)
-        </h1>
-
-        <div className="mb-4">
-          <label className="block text-sm font-medium">Fungsi f(x)</label>
-          <input
-            value={fungsi}
-            onChange={(e) => setFungsi(e.target.value)}
-            placeholder="contoh: sin(x)/x"
-            className="mt-1 w-full rounded-md border p-2"
-          />
+    <div className="min-h-screen bg-[#f8fafc] p-6 md:p-12 font-sans text-slate-900">
+      <div className="mx-auto max-w-5xl">
+        
+        {/* Header */}
+        <div className="mb-10 flex items-center gap-4">
+          <div className="bg-blue-600 p-3 rounded-2xl shadow-lg shadow-blue-200">
+            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2.5" d="M13 7l5 5m0 0l-5 5m5-5H6" />
+            </svg>
+          </div>
+          <div>
+            <h1 className="text-3xl font-black tracking-tight">Limit<span className="text-blue-600">Solver</span></h1>
+            <p className="text-slate-500 text-sm font-medium">Kalkulator Limit Aljabar Step-by-Step</p>
+          </div>
         </div>
 
-        <div className="mb-4">
-          <label className="block text-sm font-medium">x →</label>
-          <input
-            value={menuju}
-            onChange={(e) => setMenuju(e.target.value)}
-            placeholder="contoh: 0"
-            className="mt-1 w-full rounded-md border p-2"
-          />
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+          
+          {/* Panel Kiri: Input */}
+          <div className="lg:col-span-5 space-y-6">
+            <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-200">
+              <div className="space-y-6">
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Fungsi f(x)</label>
+                  <input
+                    value={fungsi}
+                    onChange={(e) => setFungsi(e.target.value)}
+                    placeholder="(x^2-4)/(x-2)"
+                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 font-mono text-blue-600 focus:border-blue-500 focus:bg-white outline-none transition-all"
+                  />
+                </div>
+
+                <div className="space-y-2">
+                  <label className="text-xs font-black uppercase tracking-widest text-slate-400 ml-1">Nilai x Mendekati (c)</label>
+                  <input
+                    value={menuju}
+                    onChange={(e) => setMenuju(e.target.value)}
+                    placeholder="2"
+                    className="w-full bg-slate-50 border-2 border-slate-100 rounded-2xl p-4 font-mono focus:border-blue-500 focus:bg-white outline-none transition-all"
+                  />
+                </div>
+
+                <button
+                  onClick={hitungLimit}
+                  disabled={isCalculating}
+                  className="w-full bg-slate-900 text-white py-5 rounded-2xl font-black text-lg hover:bg-blue-600 hover:shadow-xl hover:shadow-blue-200 active:scale-[0.98] transition-all disabled:opacity-50"
+                >
+                  {isCalculating ? "MENGHITUNG..." : "HITUNG LIMIT"}
+                </button>
+              </div>
+            </div>
+
+            {/* Hasil Card */}
+            {hasil !== null && (
+              <div className="bg-blue-600 rounded-3xl p-5 text-white shadow-lg shadow-blue-100 animate-in fade-in slide-in-from-bottom-2">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-blue-100 text-[10px] font-black uppercase tracking-widest mb-1">
+                      Hasil Akhir
+                    </p>
+                    <h2 className="text-3xl font-black font-mono leading-none tracking-tight">
+                      {hasil}
+                    </h2>
+                  </div>
+                </div>
+              </div>
+            )}
+          </div>
+
+          {/* Panel Kanan: Visual & Steps */}
+          <div className="lg:col-span-7 space-y-6">
+            
+            {/* Visualisasi Grafik */}
+            <div className="bg-white rounded-[2rem] p-6 shadow-sm border border-slate-200 min-h-[400px]">
+              <div className="flex items-center justify-between mb-6 px-2">
+                <h3 className="text-sm font-black uppercase tracking-widest text-slate-400">Visualisasi f(x)</h3>
+                <div className="flex gap-1">
+                  <span className="w-2 h-2 rounded-full bg-slate-200"></span>
+                  <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                </div>
+              </div>
+              <div className="rounded-2xl overflow-hidden bg-slate-50 border border-slate-100">
+                {fungsi ? (
+                  <FunctionPlot fungsi={normalisasiFungsi(fungsi)} label="f(x)" />
+                ) : (
+                  <div className="h-64 flex items-center justify-center text-slate-300 font-medium italic">
+                    Masukkan fungsi untuk melihat grafik
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Langkah Penyelesaian */}
+            {steps.length > 0 && (
+              <div className="bg-white rounded-[2rem] p-8 shadow-sm border border-slate-200 animate-in fade-in duration-700">
+                <h3 className="text-xs font-black uppercase tracking-widest text-slate-400 mb-8 flex items-center gap-2">
+                   <span className="w-8 h-[2px] bg-blue-600"></span>
+                   Langkah Analisis
+                </h3>
+                <div className="space-y-6">
+                  {steps.map((s, i) => (
+                    <div key={i} className="flex gap-4 group">
+                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-blue-50 flex items-center justify-center text-blue-600 font-black text-xs border border-blue-100 group-hover:bg-blue-600 group-hover:text-white transition-colors">
+                        {i + 1}
+                      </div>
+                      <div className="pt-2 text-slate-600 font-semibold leading-relaxed">
+                        {s}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
         </div>
-
-        <button
-          onClick={hitungLimit}
-          className="mb-6 w-full rounded-md bg-blue-600 py-2 font-semibold text-white hover:bg-blue-700"
-        >
-          Hitung Limit
-        </button>
-
-        {hasil !== null && (
-          <div className="rounded-md bg-green-100 p-3 mb-4">
-            <b>Hasil Limit:</b> {hasil}
-          </div>
-        )}
-
-        {steps.length > 0 && (
-          <div className="rounded-md bg-gray-50 p-4">
-            <h2 className="mb-2 font-semibold">Langkah Penyelesaian:</h2>
-            <ul className="list-decimal pl-5 space-y-1 text-sm">
-              {steps.map((s, i) => (
-                <li key={i}>{s}</li>
-              ))}
-            </ul>
-          </div>
-        )}
-        {fungsi && (
-          <FunctionPlot fungsi={normalisasiFungsi(fungsi)} label="f(x)" />
-        )}
       </div>
     </div>
   );

@@ -1,1 +1,18 @@
 @import "tailwindcss";
+:root {
+  --navbar-height: 4rem;
+}
+
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+html, body, #root {
+  height: 100%;
+  width: 100%;
+  background-color: #0f172a;
+  margin: 0 !important;
+  padding: 0 !important;
+}
